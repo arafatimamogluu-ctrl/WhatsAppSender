@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: whatsapp-sender
+    env: docker
+    region: frankfurt
+    plan: free
+    branch: main
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: HEADLESS_MODE
+        value: true
