@@ -41,4 +41,5 @@ ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app/backend
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Command to run (Shell form to allow $PORT expansion)
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT

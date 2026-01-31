@@ -481,4 +481,6 @@ class WhatsAppService:
             except Exception as e:
                 logger.error(f"Logout failed: {e}")
 
-whatsapp_service = WhatsAppService(headless=False) # Run in Visible Mode (Reliable)
+# Check environment for Headless mode (Default to True for Server, False for Local if not set)
+is_headless = os.getenv("HEADLESS_MODE", "False").lower() == "true"
+whatsapp_service = WhatsAppService(headless=is_headless)
