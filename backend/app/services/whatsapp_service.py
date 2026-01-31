@@ -46,8 +46,20 @@ class WhatsAppService:
            options.add_argument("--window-size=1920,1080") # Ensure elements render in headless
 
         try:
-            service = Service(ChromeDriverManager().install())
-            self.driver = webdriver.Chrome(service=service, options=options)
+            # Check for system installed chromium/chromedriver (Docker/Linux environment)
+            system_chromium = shutil.which("chromium") or shutil.which("chromium-browser") or shutil.which("google-chrome-stable")
+            system_driver = shutil.which("chromedriver") or shutil.which("chromium-driver")
+
+            if system_chromium and system_driver:
+                logger.info(f"Using system Chromium: {system_chromium} and Driver: {system_driver}")
+                options.binary_location = system_chromium
+                service = Service(executable_path=system_driver)
+                self.driver = webdriver.Chrome(service=service, options=options)
+            else:
+                # Fallback for Local/Windows
+                logger.info("Using Webdriver Manager (Local/Windows)")
+                service = Service(ChromeDriverManager().install())
+                self.driver = webdriver.Chrome(service=service, options=options)
             self.wait = WebDriverWait(self.driver, 30)
             self.driver.get("https://web.whatsapp.com")
             logger.info("Browser started. Waiting for login...")
