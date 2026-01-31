@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+sqlmodel
+apscheduler
+selenium
+webdriver-manager
+pyperclip
+python-multipart
+python-jose[cryptography]
+passlib[bcrypt]
