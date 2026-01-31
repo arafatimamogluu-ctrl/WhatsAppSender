@@ -31,7 +31,8 @@ COPY backend/ ./backend/
 COPY --from=frontend_builder /app/frontend/dist /app/frontend/dist
 
 # Create a non-root user
-RUN useradd -m appuser
+# Create a non-root user and give permissions
+RUN useradd -m appuser && chown -R appuser:appuser /app
 USER appuser
 
 # Environment variables
