@@ -148,8 +148,11 @@ export default function WhatsAppConnect({ onConnectionChange }) {
                     </div>
 
                     {/* Phone Pairing Section */}
-                    <div className="pl-4">
-                        <h3 className="font-semibold text-gray-700 mb-4">Telefon No ile Bağla (Beta)</h3>
+                    <div className="pl-4 border-l border-gray-100">
+                        <h3 className="font-semibold text-gray-700 mb-1">Telefon No ile Bağla (Önerilen)</h3>
+                        <p className="text-xs text-blue-600 mb-4 bg-blue-50 p-2 rounded">
+                            Bulut sunucu (Render) kullanıyorsanız en hızlı yöntem budur.
+                        </p>
                         {!pairingCode ? (
                             <form onSubmit={handlePairing} className="space-y-4">
                                 <div>
