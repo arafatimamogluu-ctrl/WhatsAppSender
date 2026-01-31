@@ -3,7 +3,7 @@ import random
 import string
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from passlib.context import CryptContext
 from jose import jwt, JWTError
 from ..database import get_session
@@ -19,16 +19,16 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 # 1 day
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class UserRegister(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     full_name: str | None = None
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class VerifyOTP(BaseModel):
-    email: EmailStr
+    email: str
     otp_code: str
 
 class Token(BaseModel):
