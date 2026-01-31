@@ -44,7 +44,9 @@ COPY . .
 # Build frontend (requires Node)
 # Multi-stage build is better, but for simplicity let's install node here or just assume we commit 'dist' (User hasn't committed dist usually).
 # Let's install Node to build frontend.
-RUN apt-get update && apt-get install -y nodejs npm
+# Install Node.js 18 (required for Vite)
+RUN curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 WORKDIR /app/frontend
 RUN npm install && npm run build
 
