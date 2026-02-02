@@ -39,6 +39,7 @@ class WhatsAppService:
         options.add_argument("--disable-gpu")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--remote-debugging-port=9222") # Debugging port
+        options.add_argument("--lang=en-US") # Enforce English for selectors
         options.add_argument("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36") # Anti-detect
         
         if self.headless:
@@ -226,7 +227,6 @@ class WhatsAppService:
                         logger.info("QR Code expired. Clicking reload...")
                         reload_btn[0].click()
                         time.sleep(2)
-                        # Try getting canvas again
                         qr_canvas = WebDriverWait(self.driver, 5).until(
                             EC.presence_of_element_located((By.XPATH, '//canvas'))
                         )
@@ -234,11 +234,18 @@ class WhatsAppService:
                 except Exception as e:
                     logger.warning(f"Reload check failed: {e}")
                 
-                return None
+                # FALLBACK: Return Full Page Screenshot
+                logger.warning("QR Canvas not found. Returning full page screenshot.")
+                return self.driver.get_screenshot_as_base64()
+            
+            return None
 
         except Exception as e:
             logger.error(f"Error getting QR: {e}")
-            return None
+            try:
+                return self.driver.get_screenshot_as_base64()
+            except:
+                return None
 
     def get_pairing_code(self, phone_number):
         """Switches to Pairing Code mode and returns the code"""
