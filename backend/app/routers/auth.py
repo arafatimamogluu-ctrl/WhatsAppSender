@@ -77,7 +77,9 @@ def register(user_data: UserRegister, session: Session = Depends(get_session)):
         full_name=user_data.full_name,
         otp_code=otp,
         otp_expiry=otp_expiry,
-        is_verified=False
+        otp_code=otp,
+        otp_expiry=otp_expiry,
+        is_verified=True # Auto-verify users (User request: No code for login)
     )
 
     # Assign Default Plan
