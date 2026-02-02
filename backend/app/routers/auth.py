@@ -57,51 +57,60 @@ def generate_otp():
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
 def register(user_data: UserRegister, session: Session = Depends(get_session)):
-    existing_user = session.exec(select(User).where(User.email == user_data.email)).first()
-    if existing_user:
-        raise HTTPException(status_code=400, detail="Bu email zaten kayıtlı.")
-    
-    # Password policy check (basic)
-    if len(user_data.password) < 8:
-         raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalıdır.")
+    try:
+        existing_user = session.exec(select(User).where(User.email == user_data.email)).first()
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Bu email zaten kayıtlı.")
+        
+        # Password policy check (basic)
+        if len(user_data.password) < 8:
+             raise HTTPException(status_code=400, detail="Şifre en az 8 karakter olmalıdır.")
 
-    otp = generate_otp()
-    otp_expiry = datetime.utcnow() + timedelta(minutes=5)
-    
-    hashed_pwd = get_password_hash(user_data.password)
-    
-    new_user = User(
-        email=user_data.email, 
-        hashed_password=hashed_pwd, 
-        role=Role.USER,
-        full_name=user_data.full_name,
-        otp_code=otp,
-        otp_expiry=otp_expiry,
-        is_verified=True # Auto-verify users (User request: No code for login)
-    )
+        otp = generate_otp()
+        otp_expiry = datetime.utcnow() + timedelta(minutes=5)
+        
+        hashed_pwd = get_password_hash(user_data.password)
+        
+        new_user = User(
+            email=user_data.email, 
+            hashed_password=hashed_pwd, 
+            role=Role.USER,
+            full_name=user_data.full_name,
+            otp_code=otp,
+            otp_expiry=otp_expiry,
+            is_verified=True # Auto-verify users (User request: No code for login)
+        )
 
-    # Assign Default Plan
-    default_plan = session.exec(select(Plan).where(Plan.name == "Free")).first()
-    if not default_plan:
-         # Create default plans if not exist (fail-safe)
-         default_plan = Plan(name="Free", max_groups=2, max_daily_sends=20, min_delay=60)
-         session.add(default_plan)
-         session.commit()
-         session.refresh(default_plan)
-    
-    new_user.plan_id = default_plan.id
-    session.add(new_user)
-    session.commit()
-    session.refresh(new_user)
-    
-    # TODO: Send Email with OTP. For now, we return it for testing/debugging.
-    print(f"DEBUG OTP for {user_data.email}: {otp}")
-    
-    return {
-        "message": "Kayıt başarılı. Lütfen email adresinize gönderilen doğrulama kodunu giriniz.",
-        "email": new_user.email,
-        "debug_otp": otp # REMOVE IN PROD
-    }
+        # Assign Default Plan
+        default_plan = session.exec(select(Plan).where(Plan.name == "Free")).first()
+        if not default_plan:
+             # Create default plans if not exist (fail-safe)
+             default_plan = Plan(name="Free", max_groups=2, max_daily_sends=20, min_delay=60)
+             session.add(default_plan)
+             session.commit()
+             session.refresh(default_plan)
+        
+        new_user.plan_id = default_plan.id
+        session.add(new_user)
+        session.commit()
+        session.refresh(new_user)
+        
+        # TODO: Send Email with OTP. For now, we return it for testing/debugging.
+        print(f"DEBUG OTP for {user_data.email}: {otp}")
+        
+        return {
+            "message": "Kayıt başarılı. Lütfen email adresinize gönderilen doğrulama kodunu giriniz.",
+            "email": new_user.email,
+            "debug_otp": otp # REMOVE IN PROD
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_msg = f"Registration Error: {str(e)} \nTraceback: {traceback.format_exc()}"
+        print(error_msg)
+        raise HTTPException(status_code=500, detail=f"Sunucu Hatası: {str(e)}")
+
 
 @router.post("/verify-otp")
 def verify_user_otp(data: VerifyOTP, session: Session = Depends(get_session)):
